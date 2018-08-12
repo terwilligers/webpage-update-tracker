@@ -1,4 +1,4 @@
-from flask import Flask
+import flask
 import psycopg2
 import config
 import sys
@@ -145,29 +145,61 @@ def html_has_changed(url):
         update_hash(new_hash, url)
     return has_changed
 
+def check_pages(urls):
+    '''
+    Creates a list of booleans corresponding to web pages that have changed
+    '''
+    results = []
+    for url in urls:    
+        changed = html_has_changed(url)
+        results.append(changed)
+    return results
 
-app = Flask(__name__)
+app = flask.Flask(__name__, static_folder='static', template_folder='templates')
 
-@app.route("/testdb")
-def testdb():
+@app.route('/') 
+def get_main_page():
+    ''' Main page of the pagetracker website'''
+    return flask.render_template('index.html')
+
+
+@app.route("/urls")
+def get_urls1():
     query = "SELECT * FROM site_hashes"
-    hashes = []
+    urls = []
     
     connection = get_connection()
     if connection is not None:
         try:
             for row in get_select_query_results(connection, query):
-                if row[2] not in hashes:
-                    hashes.append(row[2])
+                if row[1] not in urls:
+                    urls.append(row[1])
         except Exception as e:
             print(e, file=sys.stderr)
         connection.close()
     
-    return json.dumps(hashes)
-    
+    return json.dumps(urls)
 
+@app.route("/update_values")
+def get_update_values():
+    query = "SELECT * FROM site_hashes"
+    results = {}
+    
+    connection = get_connection()
+    if connection is not None:
+        try:
+            for row in get_select_query_results(connection, query):
+                url = row[1]
+                updated = html_has_changed(url)
+                results[url] = updated
+        except Exception as e:
+            print(e, file=sys.stderr)
+        connection.close()
+    
+    return json.dumps(results)
+    
 @app.route("/indb")
-def hello():
+def indb():
     #indb = is_url_in_database('https://apps.carleton.edu/campus/registrar/schedule/proposed/')
     indb = is_url_in_database('https://fivethirtyeight.com')
     if indb:
@@ -177,14 +209,16 @@ def hello():
 
 @app.route("/check_page")
 def check_page():
+    message = ""
     changed = html_has_changed('https://apps.carleton.edu/campus/registrar/schedule/proposed/')
     #changed = html_has_changed('https://fivethirtyeight.com')
     #print(url)
     #changed = html_has_changed(url)
     if changed:
-        return "Page has changed since last visit"
+        message =  "Page has changed since last visit"
     else:
-        return "Page has not changed"
+        message =  "Page has not changed"
+    return json.dumps(message)
     
 if __name__ == "__main__":
     app.run()

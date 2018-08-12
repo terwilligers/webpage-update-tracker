@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='site_tracker.css') }}" />
+    <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='site_tracker.js') }}"></script>
+</head>
+
+    
+<body>
+    <div>Tracker Website</div>
+    <form action="/check_page">
+        <button>Check for website Updates</button>
+    </form>
+    <table id=result_table>
+        <thead>
+            <td>Websites</td>
+            <td>Updated?</td>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</body>
