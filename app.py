@@ -7,7 +7,10 @@ import collections
 import requests
 import hashlib
 import lxml
+import time
+import datetime
 from lxml.html.clean import Cleaner
+
 
 def get_connection():
     '''
@@ -21,6 +24,11 @@ def get_connection():
     except Exception as e:
         print(e, file=sys.stderr)
     return connection
+
+def get_date():
+    ts = time.time()
+    timestamp = datetime.datetime.fromtimestamp(ts).strftime('%m/%d/%Y')
+    return timestamp
 
 def get_select_query_results(connection, query, parameters=None):
     '''
@@ -48,8 +56,7 @@ def remove_script_tags(file):
 def is_url_in_database(url):
     '''
     Checks if a url is contained in the database
-    '''
-    
+    '''    
     query = "select * from site_hashes"
     found = False
     connection = get_connection()
@@ -84,7 +91,7 @@ def get_old_hash(url):
 
 def update_hash(new_hash, url):
     '''
-    we update the hash of the url in the table
+    Updates the hash of the url in the table
     '''
     query = '''update site_hashes
                 set hash = %s
@@ -102,15 +109,15 @@ def update_hash(new_hash, url):
 
 def add_url_to_database(new_hash, url):
     '''
-    we create an entry in the table, containing the url and hash
+    Creates an entry in the site_hashes table, containing the url and hash
     '''
-    query = '''insert into site_hashes(url, hash)
-                values (%s, %s);
+    query = '''insert into site_hashes(url, hash, last_update)
+                values (%s, %s, %s);
             '''
     connection = get_connection()
     if connection is not None:
         try:
-            get_select_query_results(connection, query, (url, new_hash, ))
+            get_select_query_results(connection, query, (url, new_hash, get_date(), ))
         except Exception as e:
             return False
             print(e, file=sys.stderr)
@@ -120,7 +127,7 @@ def add_url_to_database(new_hash, url):
 
 def remove_url_from_database(url):
     '''
-    removes the row corresonding to the url from the database
+    Removes the row corresonding to the url from the database
     '''
     query = '''delete from site_hashes where url=%s
             '''
@@ -136,6 +143,9 @@ def remove_url_from_database(url):
     return False
 
 def get_file_hash(url):
+    '''
+    Calcultes the md5 hash of the html file, located at the specified url
+    '''
     try:
         new_file = requests.get(url).text
         new_file = remove_script_tags(new_file)
@@ -192,6 +202,48 @@ def get_main_page():
     ''' Main page of the pagetracker website'''
     return flask.render_template('index.html')
 
+@app.route("/update_values")
+def get_update_values():
+    query = "SELECT * FROM site_hashes"
+    results = {}
+    
+    connection = get_connection()
+    if connection is not None:
+        try:
+            for row in get_select_query_results(connection, query):
+                url = row[1]
+                updated = html_has_changed(url)
+                timestamp = str(row[3])
+                results[url] = (updated, timestamp)
+        except Exception as e:
+            print(e, file=sys.stderr)
+        connection.close()
+    
+    return json.dumps(results)
+
+
+@app.route("/add_url/<path:url>")
+def add_url(url):
+    if url == "null":
+        return json.dumps("")
+    message = ""
+    if is_url_in_database(url):
+        message = "You are already tracking this website"
+    else:
+        new_hash = get_file_hash(url)
+        if not new_hash:
+            message = "Sorry, you entered an invaled url"
+        add_url_to_database(new_hash, url)
+    return json.dumps(message)
+
+@app.route("/remove_url/<path:url>")
+def remove_url(url):
+    message = ""
+    if is_url_in_database(url):
+        result = remove_url_from_database(url)
+        if not result:
+            message = "Oops, there was an error with your request"
+    return json.dumps(message)
 
 @app.route("/urls")
 def get_urls1():
@@ -209,71 +261,6 @@ def get_urls1():
         connection.close()
     
     return json.dumps(urls)
-
-@app.route("/update_values")
-def get_update_values():
-    query = "SELECT * FROM site_hashes"
-    results = {}
-    
-    connection = get_connection()
-    if connection is not None:
-        try:
-            for row in get_select_query_results(connection, query):
-                url = row[1]
-                updated = html_has_changed(url)
-                results[url] = updated
-        except Exception as e:
-            print(e, file=sys.stderr)
-        connection.close()
-    
-    return json.dumps(results)
-
-
-@app.route("/add_url/<path:url>")
-def add_url(url):
-    to_return = "You are already tracking this website"
-    if not is_url_in_database(url):
-        new_hash = get_file_hash(url)
-        if not new_hash:
-            to_return = "Sorry, you entered an invaled url"
-        elif add_url_to_database(new_hash, url):
-            to_return = "Success, the new website has been added"
-        else:
-            to_return = "Sorry, you entered an invaled url"
-    return json.dumps(to_return)
-
-@app.route("/remove_url/<path:url>")
-def remove_url(url):
-    message = "You are not tracking this website, and so cannot remove it"
-    if is_url_in_database(url):
-        result = remove_url_from_database(url)
-        if result:
-            message = "Success, the website has been removed"
-        else:
-            message = "Oops, there was an error with your request"
-    return json.dumps(message)
-    
-@app.route("/indb")
-def indb():
-    #indb = is_url_in_database('https://apps.carleton.edu/campus/registrar/schedule/proposed/')
-    indb = is_url_in_database('https://fivethirtyeight.com')
-    if indb:
-       return "in db"
-    else:
-       return "not in db"
-
-@app.route("/check_page")
-def check_page():
-    message = ""
-    changed = html_has_changed('https://apps.carleton.edu/campus/registrar/schedule/proposed/')
-    #changed = html_has_changed('https://fivethirtyeight.com')
-    #print(url)
-    #changed = html_has_changed(url)
-    if changed:
-        message =  "Page has changed since last visit"
-    else:
-        message =  "Page has not changed"
-    return json.dumps(message)
     
 if __name__ == "__main__":
     app.run()
