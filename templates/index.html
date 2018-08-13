@@ -9,14 +9,18 @@
 
     
 <body>
-    <div>Tracker Website</div>
-    <form action="/check_page">
-        <button>Check for website Updates</button>
-    </form>
+    <div class="myHeader"><span>Website Update Tracker</span></div>
+    
+    <button onclick="addWebsite()" class="myButton">Add Website</button>
+    
+    <button onclick="removeWebsite()" class="myButton">Remove Website</button>
+    
     <table id=result_table>
         <thead>
-            <td>Websites</td>
-            <td>Updated?</td>
+            <tr>
+                <th><span>Websites</span></th>
+                <th><span>Updated?</span></th>
+            </tr>
         </thead>
         <tbody>
         </tbody>

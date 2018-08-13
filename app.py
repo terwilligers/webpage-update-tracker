@@ -112,10 +112,37 @@ def add_url_to_database(new_hash, url):
         try:
             get_select_query_results(connection, query, (url, new_hash, ))
         except Exception as e:
+            return False
             print(e, file=sys.stderr)
         connection.close()
         return True
     return False
+
+def remove_url_from_database(url):
+    '''
+    removes the row corresonding to the url from the database
+    '''
+    query = '''delete from site_hashes where url=%s
+            '''
+    connection = get_connection()
+    if connection is not None:
+        try:
+            get_select_query_results(connection, query, (url, ))
+        except Exception as e:
+            return False
+            print(e, file=sys.stderr)
+        connection.close()
+        return True
+    return False
+
+def get_file_hash(url):
+    try:
+        new_file = requests.get(url).text
+        new_file = remove_script_tags(new_file)
+        new_hash = hashlib.md5(new_file.encode("utf-8")).hexdigest()
+    except Exception as e:
+        return False
+    return new_hash
 
 
 def html_has_changed(url):
@@ -124,10 +151,7 @@ def html_has_changed(url):
     Return: a boolean stating whether the website's html has changed
             True if website was never seen before
     '''
-    
-    new_file = requests.get(url).text
-    new_file = remove_script_tags(new_file)
-    new_hash = hashlib.md5(new_file.encode("utf-8")).hexdigest()
+    new_hash = get_file_hash(url)
     
     #add url and hash to the database if no entry
     in_database = is_url_in_database(url)
@@ -154,6 +178,12 @@ def check_pages(urls):
         changed = html_has_changed(url)
         results.append(changed)
     return results
+
+
+
+
+
+
 
 app = flask.Flask(__name__, static_folder='static', template_folder='templates')
 
@@ -197,6 +227,31 @@ def get_update_values():
         connection.close()
     
     return json.dumps(results)
+
+
+@app.route("/add_url/<path:url>")
+def add_url(url):
+    to_return = "You are already tracking this website"
+    if not is_url_in_database(url):
+        new_hash = get_file_hash(url)
+        if not new_hash:
+            to_return = "Sorry, you entered an invaled url"
+        elif add_url_to_database(new_hash, url):
+            to_return = "Success, the new website has been added"
+        else:
+            to_return = "Sorry, you entered an invaled url"
+    return json.dumps(to_return)
+
+@app.route("/remove_url/<path:url>")
+def remove_url(url):
+    message = "You are not tracking this website, and so cannot remove it"
+    if is_url_in_database(url):
+        result = remove_url_from_database(url)
+        if result:
+            message = "Success, the website has been removed"
+        else:
+            message = "Oops, there was an error with your request"
+    return json.dumps(message)
     
 @app.route("/indb")
 def indb():
