@@ -16,19 +16,18 @@ body {
 }
 
 .myButton {
-	-moz-box-shadow: 0px 0px 0px 2px #9fb4f2;
-	-webkit-box-shadow: 0px 0px 0px 2px #9fb4f2;
-	box-shadow: 0px 0px 0px 2px #9fb4f2;
-	background-color:#7892c2;
+	-moz-box-shadow: 0px 0px 0px 2px #6480d2;
+	-webkit-box-shadow: 0px 0px 0px 2px #576fb5;
+	background-color:#2f54a7;
 	-moz-border-radius:10px;
 	-webkit-border-radius:10px;
 	border-radius:10px;
-	border:1px solid #4e6096;
+	border:1px solid #0a1f67;
 	display:inline-block;
 	cursor:pointer;
 	color:#ffffff;
 	font-family:Arial;
-	font-size:18px;
+	font-size:17px;
 	padding:5px 5px;
 	text-decoration:none;
 	text-shadow:0px 1px 0px #283966;
@@ -43,11 +42,10 @@ body {
 }
 
 div.table-title {
-   display: block;
-  margin: auto;
-  max-width: 600px;
-  padding:5px;
-  width: 100%;
+    display: block;
+    max-width: 600px;
+    padding:5px;
+    width: 100%;   
 }
 
 .table-title h3 {
@@ -58,7 +56,10 @@ div.table-title {
    font-family: "Roboto", helvetica, arial, sans-serif;
    text-shadow: -1px -1px 1px rgba(0, 0, 0, 0.1);
    text-transform:uppercase;
+    margin-top: 15px;
+    margin-bottom: 15px; 
 }
+
 
 
 /*** Table Styles **/
@@ -84,6 +85,14 @@ th {
   text-align:left;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
   vertical-align:middle;
+}
+
+th:hover{
+    cursor:pointer;
+}
+
+.not-clickable{
+    cursor:default!important;
 }
 
 th:first-child {
@@ -133,6 +142,7 @@ td {
   font-size:16px;
   text-shadow: -1px -1px 1px rgba(0, 0, 0, 0.1);
   border-right: 1px solid #C1C3D1;
+  overflow: hidden;
 }
 
 td:last-child {

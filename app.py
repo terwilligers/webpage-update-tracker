@@ -1,9 +1,7 @@
 import flask
 import psycopg2
-import config
 import sys
 import json
-import collections
 import requests
 import hashlib
 import lxml
@@ -11,6 +9,8 @@ import time
 import datetime
 from lxml.html.clean import Cleaner
 
+import config
+    
 
 def get_connection():
     '''
@@ -24,11 +24,6 @@ def get_connection():
     except Exception as e:
         print(e, file=sys.stderr)
     return connection
-
-def get_date():
-    ts = time.time()
-    timestamp = datetime.datetime.fromtimestamp(ts).strftime('%m/%d/%Y')
-    return timestamp
 
 def get_select_query_results(connection, query, parameters=None):
     '''
@@ -52,6 +47,11 @@ def remove_script_tags(file):
     cleaner = Cleaner(kill_tags = ['script'])
     result = cleaner.clean_html(file)
     return result
+
+def get_date():
+    ts = time.time()
+    timestamp = datetime.datetime.fromtimestamp(ts).strftime('%m/%d/%Y')
+    return timestamp
 
 def is_url_in_database(url):
     '''
@@ -89,23 +89,116 @@ def get_old_hash(url):
         connection.close()
     return False
 
+def get_new_hash(url):
+    '''
+    Calcultes the md5 hash of the html file, located at the specified url
+    '''
+    try:
+        new_file = requests.get(url).text
+        new_file = remove_script_tags(new_file)
+        new_hash = hashlib.md5(new_file.encode("utf-8")).hexdigest()
+    except Exception as e:
+        return False
+    return new_hash
+
 def update_hash(new_hash, url):
     '''
     Updates the hash of the url in the table
     '''
     query = '''update site_hashes
-                set hash = %s
+                set hash = %s, last_update = %s
                 where url = %s;
             '''
     connection = get_connection()
     if connection is not None:
         try:
-            get_select_query_results(connection, query, (new_hash, url, ))
+            get_select_query_results(connection, query, (new_hash, get_date(), url, ))
         except Exception as e:
             print(e, file=sys.stderr)
         connection.close()
         return True
     return False
+
+def get_last_modified(url):
+    response = requests.head(url)
+    if 'last-modified' in response.headers.keys():
+        return response.headers['last-modified']
+    else:
+        return False
+
+def was_modified_since(last_modified, url):
+    '''
+    Gets the last-modified entry in database if it exists
+    '''
+    query = "select last_modified_header from site_hashes where url = %s;"
+    updated = False
+    connection = get_connection()
+    if connection is not None:
+        try:
+            results = get_select_query_results(connection, query, (url, ))
+            if not results:
+                updated = True
+            for row in results:
+                if last_modified == row[0]:
+                    updated = False
+                else:
+                    updated = True
+        except Exception as e:
+            print(e, file=sys.stderr)
+        connection.close()
+    return updated
+
+def update_last_modified(last_modified, url):
+    '''
+    Updates the last_modified_header aspect of the url in the table
+    '''
+    query = '''update site_hashes
+                set last_modified_header = %s, last_update = %s
+                where url = %s;
+            '''
+    connection = get_connection()
+    if connection is not None:
+        try:
+            get_select_query_results(connection, query, (last_modified, get_date(), url, ))
+        except Exception as e:
+            print(e, file=sys.stderr)
+        connection.close()
+        return True
+    return False
+
+def html_has_changed(url):
+    '''
+    Input: url- a string containing a url
+    Return: a boolean stating whether the website's html has changed
+            True if website was never seen before
+    '''
+    
+    #first check if url has a last-modified header
+    #currently too slow
+    last_modified = get_last_modified(url)
+    if last_modified and was_modified_since(last_modified, url):
+        update_last_modified(last_modified, url)
+        return True
+    
+    #Otherwise check hashes
+    new_hash = get_new_hash(url)
+    
+    #add url and hash to the database if no entry
+    in_database = is_url_in_database(url)
+    if not in_database:
+        add_url_to_database(new_hash, url)
+        return True
+    
+    #otherwise we check whether hash has changed
+    old_hash = get_old_hash(url)
+    if old_hash == new_hash:
+        has_changed = False
+    else:
+        has_changed = True
+        # update entry in database
+        update_hash(new_hash, url)
+    return has_changed
+
 
 def add_url_to_database(new_hash, url):
     '''
@@ -142,59 +235,6 @@ def remove_url_from_database(url):
         return True
     return False
 
-def get_file_hash(url):
-    '''
-    Calcultes the md5 hash of the html file, located at the specified url
-    '''
-    try:
-        new_file = requests.get(url).text
-        new_file = remove_script_tags(new_file)
-        new_hash = hashlib.md5(new_file.encode("utf-8")).hexdigest()
-    except Exception as e:
-        return False
-    return new_hash
-
-
-def html_has_changed(url):
-    '''
-    Input: url- a string containing a url
-    Return: a boolean stating whether the website's html has changed
-            True if website was never seen before
-    '''
-    new_hash = get_file_hash(url)
-    
-    #add url and hash to the database if no entry
-    in_database = is_url_in_database(url)
-    if not in_database:
-        add_url_to_database(new_hash, url)
-        return True
-    
-    #otherwise we check whether hash has changed
-    old_hash = get_old_hash(url)
-    if old_hash == new_hash:
-        has_changed = False
-    else:
-        has_changed = True
-        # update entry in database
-        update_hash(new_hash, url)
-    return has_changed
-
-def check_pages(urls):
-    '''
-    Creates a list of booleans corresponding to web pages that have changed
-    '''
-    results = []
-    for url in urls:    
-        changed = html_has_changed(url)
-        results.append(changed)
-    return results
-
-
-
-
-
-
-
 app = flask.Flask(__name__, static_folder='static', template_folder='templates')
 
 @app.route('/') 
@@ -204,6 +244,8 @@ def get_main_page():
 
 @app.route("/update_values")
 def get_update_values():
+    #addition_update = flask.request.args.get('addition_update')
+    
     query = "SELECT * FROM site_hashes"
     results = {}
     
@@ -221,6 +263,25 @@ def get_update_values():
     
     return json.dumps(results)
 
+@app.route("/website_entry/<path:url>")
+def get_website_entry(url):
+    
+    query = "SELECT * FROM site_hashes WHERE url = %s"
+    results = {}
+    
+    connection = get_connection()
+    if connection is not None:
+        try:
+            for row in get_select_query_results(connection, query, (url, )):
+                url = row[1]
+                updated = True
+                timestamp = str(row[3])
+                results[url] = (updated, timestamp)
+        except Exception as e:
+            print(e, file=sys.stderr)
+        connection.close()
+    
+    return json.dumps(results)
 
 @app.route("/add_url/<path:url>")
 def add_url(url):
@@ -230,10 +291,11 @@ def add_url(url):
     if is_url_in_database(url):
         message = "You are already tracking this website"
     else:
-        new_hash = get_file_hash(url)
+        new_hash = get_new_hash(url)
         if not new_hash:
             message = "Sorry, you entered an invaled url"
-        add_url_to_database(new_hash, url)
+        else:
+            add_url_to_database(new_hash, url)
     return json.dumps(message)
 
 @app.route("/remove_url/<path:url>")

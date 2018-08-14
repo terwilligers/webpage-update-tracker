@@ -9,17 +9,19 @@
 
     
 <body>
-    <div class="myHeader"><span>Website Update Tracker</span></div>
+    <div class="table-title">
+        <h3>Website Update tracker</h3>
+    </div>
     
     <button onclick="addWebsite()" class="myButton">Add Website</button>
     
     <table id=result_table>
         <thead>
             <tr>
-                <th><span>Websites</span></th>
-                <th><span>Update Status</span></th>
-                <th><span>Last Update</span></th>
-                <th><span>Actions</span></th>
+                <th onclick="sortTable(0)"><span>Websites</span></th>
+                <th onclick="sortTable(1)"><span>Update Status</span></th>
+                <th onclick="sortTable(2)"><span>Last Update</span></th>
+                <th class="not-clickable"><span>Actions</span></th>
             </tr>
         </thead>
         <tbody>
