@@ -1,37 +1,24 @@
 @import url(https://fonts.googleapis.com/css?family=Roboto:400,500,700,300,100);
 
-.myHeader {
-    font-size: 25px;
-    margin:5px;
-    background-color: #9fb4f2;
-    padding: 8px;
-}
 
-body {
-  background-color: #3e94ec;
-  font-family: "Roboto", helvetica, arial, sans-serif;
-  font-size: 16px;
-  font-weight: 400;
-  text-rendering: optimizeLegibility;
+body{
+    background-color:#e3f4fd!important;
 }
 
 .myButton {
 	-moz-box-shadow: 0px 0px 0px 2px #6480d2;
-	-webkit-box-shadow: 0px 0px 0px 2px #576fb5;
 	background-color:#2f54a7;
 	-moz-border-radius:10px;
-	-webkit-border-radius:10px;
 	border-radius:10px;
 	border:1px solid #0a1f67;
 	display:inline-block;
 	cursor:pointer;
 	color:#ffffff;
 	font-family:Arial;
-	font-size:17px;
+	font-size:15px;
 	padding:5px 5px;
-	text-decoration:none;
 	text-shadow:0px 1px 0px #283966;
-    margin: 5px;
+     margin: 1px 5px;
 }
 .myButton:hover {
 	background-color:#476e9e;
@@ -41,27 +28,14 @@ body {
 	top:1px;
 }
 
-div.table-title {
-    display: block;
-    max-width: 600px;
-    padding:5px;
-    width: 100%;   
+.addButton{
+    margin-bottom:10px;
+    margin-top:0px;
 }
 
-.header h3 {
-   color: #fafafa;
-   font-size: 20px;
-   font-weight: 400;
-   font-style:normal;
-   font-family: "Roboto", helvetica, arial, sans-serif;
-   text-shadow: -1px -1px 1px rgba(0, 0, 0, 0.1);
-    margin-top: 10px;
-    margin-bottom: 10px; 
-}
-
-.title{
-    float:left;
-    width:50%;
+.alert-info{
+    background-color: #e4e7e8;
+    border-color: #b3bdbf
 }
 
 .user-info{
@@ -80,24 +54,12 @@ div.table-title {
 table {
   background: white;
   border-radius:3px;
-  border-collapse: collapse;
-  max-width: 1000px;
-  padding:5px;
   box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
-  animation: float 5s infinite;
+ max-width: max-content!important;
 }
- 
-th {
-  color:#D5DDE5;;
-  background:#1b1e24;
-  border-bottom:4px solid #9ea7af;
-  border-right: 1px solid #343a45;
-  font-size:18px;
-  font-weight: 100;
-  padding:20px;
-  text-align:left;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
-  vertical-align:middle;
+
+thead {
+    background: #c3c3c3
 }
 
 th:hover{
@@ -108,80 +70,11 @@ th:hover{
     cursor:default!important;
 }
 
-th:first-child {
-  border-top-left-radius:3px;
-}
- 
-th:last-child {
-  border-top-right-radius:3px;
-  border-right:none;
-}
-  
-tr {
-  border-top: 1px solid #C1C3D1;
-  border-bottom: 1px solid #C1C3D1;
-  color:#666B85;
-  font-size:16px;
-  font-weight:normal;
-  text-shadow: 0 1px 1px rgba(256, 256, 256, 0.1);
-}
- 
-tr:first-child {
-  border-top:none;
-}
-
-tr:last-child {
-  border-bottom:none;
-}
- 
 tr:nth-child(odd) td {
   background:#EBEBEB;
 }
-
-tr:last-child td:first-child {
-  border-bottom-left-radius:3px;
-}
- 
-tr:last-child td:last-child {
-  border-bottom-right-radius:3px;
-}
  
 td {
-  background:#FFFFFF;
-  padding:5px;
-  text-align:left;
-  vertical-align:middle;
   font-weight:300;
-  font-size:16px;
   text-shadow: -1px -1px 1px rgba(0, 0, 0, 0.1);
-  border-right: 1px solid #C1C3D1;
-  overflow: hidden;
-}
-
-td:last-child {
-  border-right: 0px;
-}
-
-th.text-left {
-  text-align: left;
-}
-
-th.text-center {
-  text-align: center;
-}
-
-th.text-right {
-  text-align: right;
-}
-
-td.text-left {
-  text-align: left;
-}
-
-td.text-center {
-  text-align: center;
-}
-
-td.text-right {
-  text-align: right;
 }

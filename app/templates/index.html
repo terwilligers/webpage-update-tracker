@@ -1,11 +1,11 @@
-<!DOCTYPE html>
 {% extends "base.html" %}
 
 {% block content %}
-    <button onclick="addWebsite()" class="myButton">Add Website</button>
+<div class="page-data container-fluid">
+    <button onclick="addWebsite()" class="myButton addButton">Add Website</button>
     
-    <table id=result_table>
-        <thead>
+    <table id=result_table class="table table-striped">
+        <thead class="thead-dark">
             <tr>
                 <th onclick="sortTable(0)"><span>Websites</span></th>
                 <th onclick="sortTable(1)"><span>Update Status</span></th>
@@ -16,4 +16,5 @@
         <tbody>
         </tbody>
     </table>
+</div>
 {% endblock %}
