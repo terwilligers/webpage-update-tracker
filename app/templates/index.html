@@ -1,18 +1,7 @@
 <!DOCTYPE html>
-<html>
-<head>
-    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='site_tracker.css') }}" />
-    <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='site_tracker.js') }}"></script>
-</head>
+{% extends "base.html" %}
 
-    
-<body>
-    <div class="table-title">
-        <h3>Website Update tracker</h3>
-    </div>
-    
+{% block content %}
     <button onclick="addWebsite()" class="myButton">Add Website</button>
     
     <table id=result_table>
@@ -27,4 +16,4 @@
         <tbody>
         </tbody>
     </table>
-</body>
+{% endblock %}

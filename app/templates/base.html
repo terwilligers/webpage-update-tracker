@@ -1,0 +1,37 @@
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='site_tracker.css') }}" />
+        <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='site_tracker.js') }}"></script>
+        
+        {% if title %}
+        <title>{{ title }} - webtracker</title>
+        {% else %}
+        <title>webtracker</title>
+        {% endif %}
+    </head>
+    <body>
+        <div class="table-title">
+            <h3>Website Update tracker:  
+                <a href="{{ url_for('index') }}">Home</a>
+                {% if current_user.is_anonymous %}
+                <a href="{{ url_for('login') }}">Login</a>
+                {% else %}
+                <a href="{{ url_for('logout') }}">Logout</a>
+                {% endif %}
+            </h3>
+        </div>
+        <hr>
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <ul>
+            {% for message in messages %}
+            <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </body>
+</html>

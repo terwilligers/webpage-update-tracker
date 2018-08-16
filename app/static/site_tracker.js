@@ -54,14 +54,15 @@ function loadTable(newurl=null){
 function addWebsite(){
     var url = prompt("Please enter a url to track: ");
     if (url != null){
-        $.get( 'http://127.0.0.1:5000' + "/add_url/" + url, function( data ) {
-            if(data.length > 2){
-                alert(data);
+        $.getJSON("/add_url/" + url, function( data ) {
+            if (data['message']){
+                alert(data)
             }
-        });
-        $.getJSON("/website_entry/" + url,function(data){
-            formatTable(data, url);
-            sortTable(0);
+            else{
+                delete data["message"];
+                formatTable(data, url);
+                sortTable(0);
+            }
         });
     }
 }
@@ -71,7 +72,7 @@ function removeWebsite(ele){
     var $row = $(ele).closest("tr")   // Finds the closest row <tr> 
     var $url = $row.find(".url").text();
     $row.remove();
-    $.get( 'http://127.0.0.1:5000' + "/remove_url/" + $url, function( data ) {
+    $.get( "/remove_url/" + $url, function( data ) {
         if(data.length > 2){
             alert(data);
         }
