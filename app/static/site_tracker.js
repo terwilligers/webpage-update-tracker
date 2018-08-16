@@ -45,6 +45,7 @@ function loadTable(newurl=null){
     $.getJSON("/update_values",function(data){
         //console.log(data)
         formatTable(data, newurl);
+        document.getElementById("loader").style.display = "none";
     });
 }
 
