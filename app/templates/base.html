@@ -12,8 +12,8 @@
         {% endif %}
     </head>
     <body>
-        <div class="table-title">
-            <h3>Website Update tracker:  
+        <div class="header">
+            <h3 class="title">Website Update Tracker:  
                 <a href="{{ url_for('index') }}">Home</a>
                 {% if current_user.is_anonymous %}
                 <a href="{{ url_for('login') }}">Login</a>
@@ -21,7 +21,13 @@
                 <a href="{{ url_for('logout') }}">Logout</a>
                 {% endif %}
             </h3>
+            {% if not current_user.is_anonymous %}
+            <h3 class="user-info">Current User: {{ current_user.username }}</h3>
+            {% else %}
+            <h3 class="user-info logged-out">a</h3>
+            {% endif %}
         </div>
+        
         <hr>
         {% with messages = get_flashed_messages() %}
         {% if messages %}

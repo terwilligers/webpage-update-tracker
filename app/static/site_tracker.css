@@ -48,18 +48,31 @@ div.table-title {
     width: 100%;   
 }
 
-.table-title h3 {
+.header h3 {
    color: #fafafa;
    font-size: 20px;
    font-weight: 400;
    font-style:normal;
    font-family: "Roboto", helvetica, arial, sans-serif;
    text-shadow: -1px -1px 1px rgba(0, 0, 0, 0.1);
-   text-transform:uppercase;
     margin-top: 10px;
     margin-bottom: 10px; 
 }
 
+.title{
+    float:left;
+    width:50%;
+}
+
+.user-info{
+   float:right;
+    width:50%;
+    text-align:right;
+}
+
+.logged-out{
+    visibility:hidden;
+}
 
 
 /*** Table Styles **/

@@ -1,5 +1,3 @@
-
-
 function getBaseURL() {
     var baseURL = 'http://127.0.0.1:5000';
     return baseURL;
@@ -56,7 +54,7 @@ function addWebsite(){
     if (url != null){
         $.getJSON("/add_url/" + url, function( data ) {
             if (data['message']){
-                alert(data)
+                alert(data['message'])
             }
             else{
                 delete data["message"];
