@@ -3,6 +3,8 @@ from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db
 from flask_login import UserMixin
+import time
+
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -29,18 +31,22 @@ class User(UserMixin, db.Model):
         db.session.commit()
     
     def remove_site(self, url):
-        Website.query.filter_by(url=url, user_id=self.id).delete()
-        db.session.commit()
+        if self.is_tracking_site(url):
+            Website.query.filter_by(url=url, user_id=self.id).delete()
+            db.session.commit()
         
     def get_old_hash(self, url):
-        website = Website.query.filter_by(url=url, user_id=self.id).first()
-        return website.url_hash
+        if self.is_tracking_site(url):
+            website = Website.query.filter_by(url=url, user_id=self.id).first()
+            return website.url_hash
+        return False
     
     def update_hash(self, url, new_hash):
-        website = Website.query.filter_by(url=url, user_id=self.id).first()
-        website.url_hash = new_hash
-        website.last_update = datetime.utcnow()
-        db.session.commit()
+        if self.is_tracking_site(url):
+            website = Website.query.filter_by(url=url, user_id=self.id).first()
+            website.url_hash = new_hash
+            website.last_update = datetime.utcnow()
+            db.session.commit()
     
 @login.user_loader
 def load_user(id):
@@ -55,3 +61,6 @@ class Website(db.Model):
 
     def __repr__(self):
         return '<Website {},{}>'.format(self.url,self.user_id)
+    
+    def get_readable_time(self):
+        return self.last_update.fromtimestamp(time.time()).strftime('%m/%d/%Y')

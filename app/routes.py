@@ -80,7 +80,7 @@ def add_url(url):
     website = Website.query.filter_by(user_id=current_user.id, url=url).first()
     url = website.url
     updated = True
-    timestamp = website.last_update.fromtimestamp(time.time()).strftime('%m/%d/%Y')
+    timestamp = website.get_readable_time()
     results[url] = (updated, timestamp)
     return json.dumps(results)
 
@@ -102,7 +102,7 @@ def get_update_values():
     for site in websites:
         url = site.url
         updated = html_has_changed(url)
-        timestamp = site.last_update.fromtimestamp(time.time()).strftime('%m/%d/%Y')
+        timestamp = site.get_readable_time()
         results[url] = (updated, timestamp)
     return json.dumps(results)
 
