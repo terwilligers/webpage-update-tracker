@@ -18,4 +18,7 @@ bootstrap = Bootstrap(app)
 mail = Mail(app)
 
 
+def create_app():
+    return app
+
 from app import routes, models
