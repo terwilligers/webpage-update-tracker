@@ -1,1 +1,1 @@
-web: flask db upgrade; gunicorn update-tracker:app
+web: flask db upgrade; gunicorn update_tracker:app
